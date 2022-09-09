@@ -1,0 +1,31 @@
+﻿
+@{
+    ViewBag.Title = "Home";
+    Layout = "~/Views/Shared/_LayoutPage.cshtml";
+}
+
+<style>
+    .center {
+        margin: auto;
+        width: 60%;
+        padding: 10px;
+    }
+</style>
+
+<div class="row center">
+    <div class="col-md-10" style="align-content:center ">
+        <h1>Welcome to banking app</h1><p></p>
+        <ul style="line-height: 2.5em;">
+            <li>
+                View all accounts <a href="~/Home/Account">here </a><br />
+            </li>
+            <li>
+                Initiate a Transfer  <a href="~/Home/InitiateTransaction">here </a><br />
+            </li>
+            <li>
+                View all transactions <a href="~/Home/Transactions">here </a><br />
+            </li>
+        </ul>
+    </div>
+
+</div>

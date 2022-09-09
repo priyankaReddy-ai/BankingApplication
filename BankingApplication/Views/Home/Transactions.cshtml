@@ -1,0 +1,93 @@
+﻿
+@{
+    ViewBag.Title = "Transactions";
+    Layout = "~/Views/Shared/_LayoutPage.cshtml";
+}
+<script>
+
+    $(function () {
+        LoadAllTransactions();
+        function LoadAllTransactions() {
+
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: "../Home/GetAllTransactions",
+                        cache: false,
+                        dataType: "Json"
+                    },
+                    parameterMap: function (data, operation) {
+                        return data;
+                    },
+                },
+
+                pageSize: 10,
+                batch: true,
+
+                schema: {
+                    model: {
+                        id: "TransactionID",
+                        }
+                },
+
+            });
+
+
+
+            $("#transactionsGrid").kendoGrid({
+                dataSource: dataSource,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    pageSize: 10,
+                },
+                sortable: true,
+                filterable: true,
+
+                columns: [
+                    { field: "TransactionID", hidden: true },
+
+                    {
+                        field: "FromAccount",
+                        width: "15%", title: "From Account"
+                    },
+                    {
+                        field: "ToAccount",
+                        width: "15%", title: "To Account"
+                    },
+                    {
+                        field: "TransactionTime",
+                        template: kendo.template($("#command-template").html()),
+                        width: "15%", title: "Transaction Time"
+                    },
+                     {
+                         field: "AmountDebited",
+                         width: "15%", title: "Amount Debited"
+                     },
+                      {
+                          field: "FromAccBal",
+                          width: "15%", title: "From Account Balance"
+                      },
+                       {
+                           field: "ToAccBal",
+                           width: "15%", title: "To Account Balance"
+                       },
+                ],
+            });
+            $(".k-grid-add").on("click", function () {
+                isCreating = true;
+            });
+        }
+    });
+
+</script>
+
+<div id="statementDiv">
+    <h2>All Transactions</h2>
+      <a href="~/Home/InitiateTransaction"> Initiate a Transfer</a><br />
+    <div class="table-responsive" id="transactionsGrid" style="width:80%"></div>
+</div>
+<script id="command-template" type="text/x-kendo-template">
+    @*#= kendo.toString(new Date( parseInt(CreatedDate.substr(6)) + new Date().getTimezoneOffset() * 60000),"MM/dd/yyyy") #*@
+    #= kendo.toString(kendo.parseDate(TransactionTime, 'yyyy-MM-dd'),"dd-MM-yyyy hh:mm:ss") #
+</script>

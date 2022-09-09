@@ -1,0 +1,134 @@
+﻿
+@{
+    ViewBag.Title = "InitiateTransaction";
+    Layout = "~/Views/Shared/_LayoutPage.cshtml";
+}
+<script>
+    var fromAccId;
+    var ToAccId;
+    var TotalAccounts;
+    function validateAccounts(isFrom)
+    {
+        if (fromAccId == ToAccId) {
+            if (!isFrom)
+                $("#ToAccount").data("kendoDropDownList").value("");
+            else
+                $("#FromAccount").data("kendoDropDownList").value("");
+
+            alert("From Account and To Account should not be same")
+        }
+    }
+    $(function () {
+        
+        var accountDataSource = new kendo.data.DataSource({
+            transport: {
+                read: function (options) {
+                    $.ajax({
+                        url: "../Home/GetAllAccounts" ,
+                        dataType: "json",
+                        success: (function (data) {
+                            if (data) {
+                                TotalAccounts = data;
+                                options.success(data);
+                            }
+                        })
+
+                    })
+                }
+            }
+
+        });
+
+        $("#FromAccount").kendoDropDownList({
+            optionLabel: "--Select--",
+            dataSource: accountDataSource,
+            dataTextField: "AccountName",
+            dataValueField: "AccountID",
+            change: FromAccountChange
+        });
+        $("#ToAccount").kendoDropDownList({
+            optionLabel: "--Select--",
+            dataSource: accountDataSource,
+            dataTextField: "AccountName",
+            dataValueField: "AccountID",
+            change: ToAccountChange
+        });
+        function FromAccountChange(e)
+        {
+            fromAccId = this.value();
+            validateAccounts(true)
+        }
+        function ToAccountChange(e) {
+            ToAccId = this.value();
+            validateAccounts(false)
+
+            
+        }
+        
+    })
+    function TransferAmount()
+    {
+        var balance = $("#amtTransfer").val();
+
+        if (fromAccId <= 0 || ToAccId <= 0 || balance == '' || balance == null)
+        {
+            alert("Please enter mandatory fields")
+            return;
+        }
+
+        var fromAccount = TotalAccounts.filter(a => a.AccountID === fromAccId)[0];
+        var ToAccount = TotalAccounts.filter(a => a.AccountID === ToAccId)[0];
+        var fromAccountBal = fromAccount.Balance
+        var ToAccountBal = ToAccount.Balance
+
+        if (fromAccountBal < balance || fromAccount <= 0) {
+            alert("From Account doesn't have Sufficient funds to transfer ")
+            return;
+        }
+        if (balance <= 0) {
+            alert("Please enter valid Amount to transfer ")
+            return;
+        }
+
+        var obj={
+            FromAccount: fromAccId,
+            ToAccount: ToAccId,
+            AmountDebited: balance
+        };
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("TransferAmount", "Home")",
+            data: obj,
+        async:false,
+        success: function (result) {
+            if (result == "True") {
+
+                alert("Transaction Saved Successfully");
+                $("#ToAccount").data("kendoDropDownList").value("");
+                $("#FromAccount").data("kendoDropDownList").value("");
+                $("#amtTransfer").val("");
+                fromAccId = 0;
+                ToAccId = 0;
+                window.location.href = '/Home/Transactions' ;
+
+            }
+            else {
+            }
+        },
+        error: function () {
+
+        }
+    });
+    }
+</script>
+<h2>Transfer Funds</h2>
+<div>
+    <b> From Account<span class="mandatory"> * </span></b>   <div id="FromAccount"></div>
+    <b>To Account<span class="mandatory"> * </span></b>   <div id="ToAccount"></div>
+    <b> Amount to transfer<span class="mandatory"> * </span></b><input type="number" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value>10000) return false;"  id="amtTransfer"/>
+      <input type="button" value="Transfer" onclick="TransferAmount()"/>
+    <a href="~/Home/Transactions"> Go To Transactions</a><br />
+
+
+</div>
+
